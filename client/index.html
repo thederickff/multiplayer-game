@@ -3,21 +3,23 @@
     <title>Mutiplayer Game</title>
 </head>
 <body>
-    <h2>It works</h2>
+    <canvas id="ctx" width="500" height="500" style="border: 1px solid #000000"></canvas>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
     <script>
+        var ctx = document.getElementById("ctx").getContext("2d");
+        var WIDTH = 500;
+        var HEIGHT = 500;
+        ctx.font = '20px Arial';
+        ctx.fillText('It works', 20, 20);
         var socket = io();
         var random = Math.random();
 
-        document.onclick = function () {
-            socket.emit('happy', {
-                'reason': 'it is my birthday ' + random
-            });
-        };
-
-        socket.on('serverMsg', function (msg) {
-            console.log("Came from server: " + msg);
+        socket.on('newpositions', function(data) {
+            ctx.clearRect(0, 0, WIDTH, HEIGHT);
+            for (var i = 0; i < data.length; ++i) {
+                ctx.fillText(data[i].number, data[i].x, data[i].y);
+            }
         });
 
     </script>
