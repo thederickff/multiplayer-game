@@ -14,6 +14,7 @@ console.log("Server started.");
 
 var SOCKET_LIST = {};
 var fps = 1000 / 30;
+var DEBUG = true;
 
 var Entity = function(id) {
     var self = {
@@ -148,10 +149,14 @@ Bullet.update = function() {
     for (var i in Bullet.list) {
         var bullet = Bullet.list[i];
         bullet.update();
-        bullets.push({
-            x: bullet.x,
-            y: bullet.y,
-        });
+        if (bullet.toRemove) {
+            delete Bullet.list[i];
+        } else {
+            bullets.push({
+                x: bullet.x,
+                y: bullet.y,
+            });
+        }
     }
 
     return bullets;
@@ -168,6 +173,21 @@ io.sockets.on('connection', function (socket) {
     socket.on('disconnect', function() {
         delete SOCKET_LIST[socket.id];
         Player.onDisconnect(socket);
+    });
+
+    socket.on('sendMessage', function(message) {
+        var playerName = ("" + socket.id).slice(2, 7);
+        for (var i in SOCKET_LIST) {
+            SOCKET_LIST[i].emit('addToChat', playerName + ": " + message);
+        }
+    });
+
+    socket.on('evalServer', function(data) {
+        if (!DEBUG) {
+            return;
+        }
+        var res = eval(data);
+        socket.emit('evalAnswer', res);
     });
 });
 
