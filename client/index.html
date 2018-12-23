@@ -14,14 +14,24 @@
 
         var socket = io();
         var random = Math.random();
+        var player_id = 0;
+
+        socket.on('player_id', function(id) {
+            player_id = id;
+        });
+
+        var me = {};
 
         socket.on('newpositions', function(data) {
             ctx.clearRect(0, 0, WIDTH, HEIGHT);
             for (var i = 0; i < data.players.length; ++i) {
                 ctx.fillText(data.players[i].number, data.players[i].x, data.players[i].y);
+                if (data.players[i].id == player_id) {
+                    me = data.players[i];
+                }
             }
             for (var i = 0; i < data.bullets.length; ++i) {
-                ctx.fillText(data.bullets[i].x - 5, data.bullets[i].y - 5, 10, 10);
+                ctx.fillRect(data.bullets[i].x - 5, data.bullets[i].y - 5, 10, 10);
             }
         });
 
@@ -57,6 +67,23 @@
                     socket.emit('keyPress', {inputId: 'right', state: false});
                     break;
             }
+        }
+
+        document.onclick = function(evt) {
+            var x = evt.clientX - me.x - 15;
+            var y = evt.clientY - me.y + 10;
+            var radius = Math.sqrt(x * x + y * y);
+            var angle = Math.acos(x / radius) * 180 / Math.PI;
+
+            if (y < 0) {
+                angle = 360 - angle;
+            }
+
+            socket.emit('fire', {
+                x: me.x + 10,
+                y: me.y - 10,
+                angle: angle
+            });
         }
     </script>
 </body>

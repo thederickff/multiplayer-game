@@ -77,6 +77,7 @@ Player.list = {};
 Player.onConnect = function(socket) {
     var player = Player(socket.id);
 
+    socket.emit('player_id', player.id);
     socket.on('keyPress', function(data) {
         switch (data.inputId) {
             case 'up':
@@ -93,6 +94,10 @@ Player.onConnect = function(socket) {
                 break;
         }
     });
+
+    socket.on('fire', function(data) {
+        Bullet(data.x, data.y, data.angle);
+    });
 };
 Player.update = function() {
     var players = [];
@@ -101,6 +106,7 @@ Player.update = function() {
         var player = Player.list[i];
         player.update();
         players.push({
+            id: player.id,
             x: player.x,
             y: player.y,
             number: player.number
@@ -114,12 +120,14 @@ Player.onDisconnect = function(socket) {
     delete Player.list[socket.id];
 }
 
-var Bullet = function(angle) {
+var Bullet = function(x, y, angle) {
     var self = Entity(Math.random());
+    self.x = x;
+    self.y = y;
     var rad = angle / 180 * Math.PI;
     self.speedX = Math.cos(rad) * 10;
-    //self.speedY = Math.sin(rad) * 10;
-    console.log(self.speedY);
+    self.speedY = Math.sin(rad) * 10;
+
     self.timer = 0;
     self.toRemove = false;
     var super_update = self.update;
@@ -135,10 +143,6 @@ var Bullet = function(angle) {
 };
 Bullet.list = {};
 Bullet.update = function() {
-    if (Math.random() < 0.1) {
-        Bullet(Math.random() * 360);
-    }
-
     var bullets = [];
 
     for (var i in Bullet.list) {
