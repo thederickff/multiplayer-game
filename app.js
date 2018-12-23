@@ -13,6 +13,8 @@ serv.listen(2000);
 console.log("Server started.");
 
 var SOCKET_LIST = {};
+var WIDTH = 500;
+var HEIGHT = 500;
 var fps = 1000 / 30;
 var DEBUG = true;
 
@@ -32,6 +34,20 @@ var Entity = function(id) {
     self.updatePosition = function() {
         self.x += self.speedX;
         self.y += self.speedY;
+
+        if (self.x < 0) {
+            self.x = 0;
+        }
+        if (self.x > WIDTH - 15) {
+            self.x = WIDTH - 15;
+        }
+
+        if (self.y < 20) {
+            self.y = 20;
+        } 
+        if (self.y > HEIGHT) {
+            self.y = HEIGHT;
+        }
     }
 
     return self;
@@ -50,6 +66,10 @@ var Player = function(id) {
     self.update = function() {
         self.updateSpeed();
         super_update();
+    }
+    
+    self.shoot = function(angle) {
+        Bullet(self.x + 10, self.y - 10, angle);
     }
 
     self.updateSpeed = function() {
@@ -96,8 +116,8 @@ Player.onConnect = function(socket) {
         }
     });
 
-    socket.on('fire', function(data) {
-        Bullet(data.x, data.y, data.angle);
+    socket.on('fire', function(angle) {
+       player.shoot(angle);
     });
 };
 Player.update = function() {
@@ -133,7 +153,7 @@ var Bullet = function(x, y, angle) {
     self.toRemove = false;
     var super_update = self.update;
     self.update = function() {
-        if (self.timer++ > 100) {
+        if (self.timer++ > 40) {
             self.toRemove = true;
         }
         super_update();

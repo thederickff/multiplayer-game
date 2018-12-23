@@ -1,15 +1,76 @@
-<html>
+<html lang="en">
+
 <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Mutiplayer Game</title>
+    <link href="/client/css/bootstrap.min.css" rel="stylesheet" >
+
+    <style>
+        body {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        .bd-placeholder-img {
+            font-size: 1.125rem;
+            text-anchor: middle;
+        }
+    
+        @media (min-width: 768px) {
+            .bd-placeholder-img-lg {
+            font-size: 3.5rem;
+            }
+        }
+    </style>
+
+     <!-- Custom styles for this template -->
+     <link href="/client/css/cover.css" rel="stylesheet">
 </head>
-<body>
-    <canvas id="ctx" width="500" height="500" style="border: 1px solid #000000"></canvas>
-    <div id="chat-text" style="width: 500px; height: 100px; overflow-y: scroll">
-        <div>Hello!</div>
+
+<body class="text-center">
+    <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
+        <header class="masthead mb-auto">
+            <div class="inner">
+                <h3 class="masthead-brand">Multiplayer Game</h3>
+                <nav class="nav nav-masthead justify-content-center">
+                    <a class="nav-link active" href="#">Home</a>
+                    <a class="nav-link" href="#">Features</a>
+                    <a class="nav-link" href="#">Contact</a>
+                </nav>
+            </div>
+        </header>
+
+        <main role="main" class="inner cover">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <canvas id="ctx" width="500" height="500" style="margin-top: 20px; margin-bottom: 10px; border: 10px solid #50b050"></canvas>   
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div id="chat-text" style="height: 250px; overflow-y: scroll; background-color: gray">
+                            <div>Hello!</div>
+                        </div>
+                        <form id="chat-form">
+                            <label for="chat-input">Message: </label>
+                            <input type="text" id="chat-input" class="form-control" />
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="mastfoot mt-auto">
+            <div class="inner">
+                <p>Simple Multiplayer Game, by <a href="https://github.com/derickfelix">Derick Felix</a>.</p>
+            </div>
+        </footer>
     </div>
-    <form id="chat-form">
-        <input type="text" id="chat-input" style="width: 500px" />
-    </form>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
     <script>
@@ -25,14 +86,18 @@
         var random = Math.random();
         var player_id = 0;
 
-        socket.on('player_id', function(id) {
+        socket.on('player_id', function (id) {
             player_id = id;
         });
 
         var me = {};
 
-        socket.on('newpositions', function(data) {
+        socket.on('newpositions', function (data) {
             ctx.clearRect(0, 0, WIDTH, HEIGHT);
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, WIDTH, HEIGHT);
+            ctx.fillStyle = 'black';
+
             for (var i = 0; i < data.players.length; ++i) {
                 ctx.fillText(data.players[i].number, data.players[i].x, data.players[i].y);
                 if (data.players[i].id == player_id) {
@@ -44,66 +109,63 @@
             }
         });
 
-        document.onkeydown = function(evt) {
+        document.onkeydown = function (evt) {
             switch (evt.keyCode) {
                 case 87:
-                    socket.emit('keyPress', {inputId: 'up', state: true});
+                    socket.emit('keyPress', { inputId: 'up', state: true });
                     break;
                 case 83:
-                    socket.emit('keyPress', {inputId: 'down', state: true});
+                    socket.emit('keyPress', { inputId: 'down', state: true });
                     break;
                 case 65:
-                    socket.emit('keyPress', {inputId: 'left', state: true});
+                    socket.emit('keyPress', { inputId: 'left', state: true });
                     break;
                 case 68:
-                    socket.emit('keyPress', {inputId: 'right', state: true});
+                    socket.emit('keyPress', { inputId: 'right', state: true });
                     break;
             }
         }
 
-        document.onkeyup = function(evt) {
+        document.onkeyup = function (evt) {
             switch (evt.keyCode) {
                 case 87:
-                    socket.emit('keyPress', {inputId: 'up', state: false});
+                    socket.emit('keyPress', { inputId: 'up', state: false });
                     break;
                 case 83:
-                    socket.emit('keyPress', {inputId: 'down', state: false});
+                    socket.emit('keyPress', { inputId: 'down', state: false });
                     break;
                 case 65:
-                    socket.emit('keyPress', {inputId: 'left', state: false});
+                    socket.emit('keyPress', { inputId: 'left', state: false });
                     break;
                 case 68:
-                    socket.emit('keyPress', {inputId: 'right', state: false});
+                    socket.emit('keyPress', { inputId: 'right', state: false });
                     break;
             }
         }
 
-        document.onclick = function(evt) {
+        document.onclick = function (evt) {
+            console.log("x: " + evt.clientX + ", y: " + evt.clientY);
             var x = evt.clientX - me.x - 15;
             var y = evt.clientY - me.y + 10;
             var radius = Math.sqrt(x * x + y * y);
             var angle = Math.acos(x / radius) * 180 / Math.PI;
-
+            
             if (y < 0) {
                 angle = 360 - angle;
             }
 
-            socket.emit('fire', {
-                x: me.x + 10,
-                y: me.y - 10,
-                angle: angle
-            });
+            socket.emit('fire', angle);
         }
 
-        socket.on('addToChat', function(data) {
+        socket.on('addToChat', function (data) {
             chatText.innerHTML += '<div>' + data + "</div>";
         });
 
-        socket.on('evalAnswer', function(data) {
+        socket.on('evalAnswer', function (data) {
             console.log(data);
         });
-        
-        chatForm.onsubmit = function(evt) {
+
+        chatForm.onsubmit = function (evt) {
             evt.preventDefault();
             if (chatInput.value[0] === '/') {
                 socket.emit('evalServer', chatInput.value.slice(1));
@@ -114,4 +176,5 @@
         }
     </script>
 </body>
+
 </html>
