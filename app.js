@@ -8,7 +8,7 @@ app.get('/', function (req, res) {
 
 app.use('/client', express.static(__dirname + '/client'));
 
-serv.listen(2000);
+serv.listen(2001);
 
 console.log("Server started.");
 
@@ -50,6 +50,10 @@ var Entity = function(id) {
         }
     }
 
+    self.getDistance = function(pt) {
+        return Math.sqrt(Math.pow(self.x - pt.x, 2) + Math.pow(self.y - pt.y, 2));
+    }
+
     return self;
 };
 
@@ -75,7 +79,7 @@ var Player = function(id) {
     }
     
     self.shoot = function(angle) {
-        Bullet(self.x + 10, self.y - 10, angle);
+        Bullet(self.id, self.x + 10, self.y - 10, angle);
     }
 
     self.updateSpeed = function() {
@@ -149,8 +153,9 @@ Player.onDisconnect = function(socket) {
     delete Player.list[socket.id];
 }
 
-var Bullet = function(x, y, angle) {
+var Bullet = function(parent, x, y, angle) {
     var self = Entity(Math.random());
+    self.parent = parent;
     self.x = x;
     self.y = y;
     var rad = angle / 180 * Math.PI;
@@ -165,6 +170,14 @@ var Bullet = function(x, y, angle) {
             self.toRemove = true;
         }
         super_update();
+        
+        for (var i in Player.list) {
+            var p = Player.list[i];
+            if (self.parent !== p.id && self.getDistance(p) < 32) {
+                self.toRemove = true;
+            }
+        }
+
     }
     Bullet.list[self.id] = self;
 
