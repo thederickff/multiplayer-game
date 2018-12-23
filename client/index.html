@@ -22,6 +22,39 @@
             }
         });
 
+        document.onkeydown = function(evt) {
+            switch (evt.keyCode) {
+                case 87:
+                    socket.emit('keyPress', {inputId: 'up', state: true});
+                    break;
+                case 83:
+                    socket.emit('keyPress', {inputId: 'down', state: true});
+                    break;
+                case 65:
+                    socket.emit('keyPress', {inputId: 'left', state: true});
+                    break;
+                case 68:
+                    socket.emit('keyPress', {inputId: 'right', state: true});
+                    break;
+            }
+        }
+
+        document.onkeyup = function(evt) {
+            switch (evt.keyCode) {
+                case 87:
+                    socket.emit('keyPress', {inputId: 'up', state: false});
+                    break;
+                case 83:
+                    socket.emit('keyPress', {inputId: 'down', state: false});
+                    break;
+                case 65:
+                    socket.emit('keyPress', {inputId: 'left', state: false});
+                    break;
+                case 68:
+                    socket.emit('keyPress', {inputId: 'right', state: false});
+                    break;
+            }
+        }
     </script>
 </body>
 </html>
