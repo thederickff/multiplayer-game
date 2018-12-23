@@ -11,14 +11,17 @@
         var WIDTH = 500;
         var HEIGHT = 500;
         ctx.font = '20px Arial';
-        
+
         var socket = io();
         var random = Math.random();
 
         socket.on('newpositions', function(data) {
             ctx.clearRect(0, 0, WIDTH, HEIGHT);
-            for (var i = 0; i < data.length; ++i) {
-                ctx.fillText(data[i].number, data[i].x, data[i].y);
+            for (var i = 0; i < data.players.length; ++i) {
+                ctx.fillText(data.players[i].number, data.players[i].x, data.players[i].y);
+            }
+            for (var i = 0; i < data.bullets.length; ++i) {
+                ctx.fillText(data.bullets[i].x - 5, data.bullets[i].y - 5, 10, 10);
             }
         });
 

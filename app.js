@@ -72,6 +72,7 @@ var Player = function(id) {
 
     return self;
 }
+
 Player.list = {};
 Player.onConnect = function(socket) {
     var player = Player(socket.id);
@@ -94,24 +95,64 @@ Player.onConnect = function(socket) {
     });
 };
 Player.update = function() {
-    var pack = [];
+    var players = [];
 
     for (var i in Player.list) {
         var player = Player.list[i];
         player.update();
-        pack.push({
+        players.push({
             x: player.x,
             y: player.y,
             number: player.number
         });
     }
 
-    return pack;
+    return players;
 }
 
 Player.onDisconnect = function(socket) {
     delete Player.list[socket.id];
 }
+
+var Bullet = function(angle) {
+    var self = Entity(Math.random());
+    var rad = angle / 180 * Math.PI;
+    self.speedX = Math.cos(rad) * 10;
+    //self.speedY = Math.sin(rad) * 10;
+    console.log(self.speedY);
+    self.timer = 0;
+    self.toRemove = false;
+    var super_update = self.update;
+    self.update = function() {
+        if (self.timer++ > 100) {
+            self.toRemove = true;
+        }
+        super_update();
+    }
+    Bullet.list[self.id] = self;
+
+    return self;
+};
+Bullet.list = {};
+Bullet.update = function() {
+    if (Math.random() < 0.1) {
+        Bullet(Math.random() * 360);
+    }
+
+    var bullets = [];
+
+    for (var i in Bullet.list) {
+        var bullet = Bullet.list[i];
+        bullet.update();
+        bullets.push({
+            x: bullet.x,
+            y: bullet.y,
+        });
+    }
+
+    return bullets;
+}
+
 
 var io = require('socket.io')(serv, {});
 io.sockets.on('connection', function (socket) {
@@ -127,10 +168,13 @@ io.sockets.on('connection', function (socket) {
 });
 
 setInterval(function () {
-    var pack = Player.update();
+    var package = {
+        players: Player.update(),
+        bullets: Bullet.update()
+    };
 
     for (var i in SOCKET_LIST) {    
         var socket = SOCKET_LIST[i];
-        socket.emit('newpositions', pack);
+        socket.emit('newpositions', package);
     }
 }, fps);
