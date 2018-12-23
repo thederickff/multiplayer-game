@@ -4,8 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Mutiplayer Game</title>
-    <link href="/client/css/bootstrap.min.css" rel="stylesheet" >
-
+    
     <style>
         body {
             -webkit-touch-callout: none;
@@ -15,62 +14,19 @@
             -ms-user-select: none;
             user-select: none;
         }
-        .bd-placeholder-img {
-            font-size: 1.125rem;
-            text-anchor: middle;
-        }
-    
-        @media (min-width: 768px) {
-            .bd-placeholder-img-lg {
-            font-size: 3.5rem;
-            }
-        }
     </style>
-
-     <!-- Custom styles for this template -->
-     <link href="/client/css/cover.css" rel="stylesheet">
 </head>
 
-<body class="text-center">
-    <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
-        <header class="masthead mb-auto">
-            <div class="inner">
-                <h3 class="masthead-brand">Multiplayer Game</h3>
-                <nav class="nav nav-masthead justify-content-center">
-                    <a class="nav-link active" href="#">Home</a>
-                    <a class="nav-link" href="#">Features</a>
-                    <a class="nav-link" href="#">Contact</a>
-                </nav>
-            </div>
-        </header>
+<body>
+    <canvas id="ctx" width="500" height="500" style="margin-top: 20px; margin-bottom: 10px; border: 10px solid #50b050"></canvas>
 
-        <main role="main" class="inner cover">
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-12">
-                        <canvas id="ctx" width="500" height="500" style="margin-top: 20px; margin-bottom: 10px; border: 10px solid #50b050"></canvas>   
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-12">
-                        <div id="chat-text" style="height: 250px; overflow-y: scroll; background-color: gray">
-                            <div>Hello!</div>
-                        </div>
-                        <form id="chat-form">
-                            <label for="chat-input">Message: </label>
-                            <input type="text" id="chat-input" class="form-control" />
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </main>
-
-        <footer class="mastfoot mt-auto">
-            <div class="inner">
-                <p>Simple Multiplayer Game, by <a href="https://github.com/derickfelix">Derick Felix</a>.</p>
-            </div>
-        </footer>
+    <div id="chat-text" style="height: 250px; overflow-y: scroll">
+        <div>Hello!</div>
     </div>
+    <form id="chat-form">
+        <label for="chat-input">Message: </label>
+        <input type="text" id="chat-input" style="width: 450px" />
+    </form>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
     <script>
@@ -143,18 +99,24 @@
             }
         }
 
-        document.onclick = function (evt) {
-            console.log("x: " + evt.clientX + ", y: " + evt.clientY);
+        document.onmousedown = function () {
+            socket.emit('keyPress', { inputId: 'attack', state: true });
+        }
+
+        document.onmouseup = function () {
+            socket.emit('keyPress', { inputId: 'attack', state: false });
+        }
+        document.onmousemove = function (evt) {
             var x = evt.clientX - me.x - 15;
             var y = evt.clientY - me.y + 10;
             var radius = Math.sqrt(x * x + y * y);
             var angle = Math.acos(x / radius) * 180 / Math.PI;
-            
+
             if (y < 0) {
                 angle = 360 - angle;
             }
 
-            socket.emit('fire', angle);
+            socket.emit('keyPress', { inputId: 'mouseAngle', state: angle });
         }
 
         socket.on('addToChat', function (data) {

@@ -60,12 +60,18 @@ var Player = function(id) {
     self.pressingRight =  false;
     self.pressingUp =  false;
     self.pressingDown =  false;
+    self.pressingAttack = false;
+    self.mouseAngle = 0;
     self.maxSpeed =  10;
 
     var super_update = self.update;
     self.update = function() {
         self.updateSpeed();
         super_update();
+
+        if (self.pressingAttack) {
+            self.shoot(self.mouseAngle);
+        }
     }
     
     self.shoot = function(angle) {
@@ -113,11 +119,13 @@ Player.onConnect = function(socket) {
             case 'right':
                 player.pressingRight = data.state;
                 break;
+            case 'attack':
+                player.pressingAttack = data.state;
+                break;
+            case 'mouseAngle':
+                player.mouseAngle = data.state;
+                break;
         }
-    });
-
-    socket.on('fire', function(angle) {
-       player.shoot(angle);
     });
 };
 Player.update = function() {
